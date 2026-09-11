@@ -1,0 +1,15 @@
+import { expect, test } from 'vitest'
+import { render, screen } from '@testing-library/react'
+import Page from '@/app/page'
+
+test('Page renders heading and link', () => {
+    render(<Page />)
+
+    expect(
+        screen.getByRole('heading', { level: 1, name: 'Home' }),
+    ).toBeInTheDocument()
+
+    expect(
+        screen.getByRole('link', { name: 'Go to About Page' }),
+    ).toBeInTheDocument()
+})
