@@ -1,8 +1,11 @@
-import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter'
+import { AppRouterCacheProvider } from '@mui/material-nextjs/v16-appRouter'
 import { ThemeProvider } from '@mui/material/styles'
 import { Roboto } from 'next/font/google'
-import theme from '@/app/theme'
+import theme from '@/lib/theme'
 import type { ReactNode } from 'react'
+import InitColorSchemeScript from '@mui/material/InitColorSchemeScript'
+import CssBaseline from '@mui/material/CssBaseline'
+import { StoreProvider } from '@/components/snackbar-provider'
 
 const roboto = Roboto({
   weight: ['300', '400', '500', '700'],
@@ -18,10 +21,14 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={roboto.variable}>
+    <html lang="en" className={roboto.variable} suppressHydrationWarning>
       <body>
-        <AppRouterCacheProvider options={{ key: 'css', enableCssLayer: true }}>
-          <ThemeProvider theme={theme}>{children}</ThemeProvider>
+        <InitColorSchemeScript attribute="class" defaultMode="system" />
+        <AppRouterCacheProvider>
+          <ThemeProvider theme={theme} defaultMode="system">
+            <CssBaseline />
+            <StoreProvider>{children}</StoreProvider>
+          </ThemeProvider>
         </AppRouterCacheProvider>
       </body>
     </html>
