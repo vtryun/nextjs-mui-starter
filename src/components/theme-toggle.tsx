@@ -1,13 +1,13 @@
 'use client'
 
-import type { Theme } from '@mui/material/styles'
-import { alpha, useColorScheme } from '@mui/material/styles'
-import Box from '@mui/material/Box'
-import ButtonBase from '@mui/material/ButtonBase'
 import type { SvgIconComponent } from '@mui/icons-material'
-import MonitorRoundedIcon from '@mui/icons-material/MonitorRounded'
 import DarkModeRoundedIcon from '@mui/icons-material/DarkModeRounded'
 import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded'
+import MonitorRoundedIcon from '@mui/icons-material/MonitorRounded'
+import Box from '@mui/material/Box'
+import ButtonBase from '@mui/material/ButtonBase'
+import type { Theme } from '@mui/material/styles'
+import { alpha, useColorScheme } from '@mui/material/styles'
 
 const THEME_OPTIONS = [
   { value: 'light', label: 'Light', Icon: LightModeRoundedIcon },
@@ -85,7 +85,6 @@ const buttonSx = (theme: Theme) => ({
 
 export default function ThemeToggle() {
   const { mode, setMode } = useColorScheme()
-
   if (!mode) return null
 
   return (

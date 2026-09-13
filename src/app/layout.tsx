@@ -6,6 +6,7 @@ import type { ReactNode } from 'react'
 import InitColorSchemeScript from '@mui/material/InitColorSchemeScript'
 import CssBaseline from '@mui/material/CssBaseline'
 import { StoreProvider } from '@/components/snackbar-provider'
+import { QueryProvider } from '@/components/query-provider'
 
 const roboto = Roboto({
   weight: ['300', '400', '500', '700'],
@@ -27,7 +28,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <AppRouterCacheProvider>
           <ThemeProvider theme={theme} defaultMode="system">
             <CssBaseline />
-            <StoreProvider>{children}</StoreProvider>
+            <QueryProvider>
+              <StoreProvider>{children}</StoreProvider>
+            </QueryProvider>
           </ThemeProvider>
         </AppRouterCacheProvider>
       </body>

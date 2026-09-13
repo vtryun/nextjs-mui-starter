@@ -4,12 +4,11 @@ import { signOut } from '@/lib/auth-client'
 import { useRouter } from 'next/navigation'
 import Button from '@mui/material/Button'
 import { useState } from 'react'
-import { useAppDispatch } from '@/store/hooks'
-import { showSnackbar } from '@/store/snackbar-slice'
+import { useSnackbar } from '@/hooks/useSnackbar'
 
 export default function SignOutButton() {
   const router = useRouter()
-  const dispatch = useAppDispatch()
+  const { show } = useSnackbar()
   const [loading, setLoading] = useState(false)
 
   const handleSignOut = async () => {
@@ -19,12 +18,7 @@ export default function SignOutButton() {
     const { error } = await signOut({
       fetchOptions: {
         onSuccess: () => {
-          dispatch(
-            showSnackbar({
-              message: 'Signed out successfully',
-              severity: 'success',
-            }),
-          )
+          show('Signed out successfully', 'success')
           router.push('/sign-in')
           router.refresh()
         },
@@ -32,12 +26,7 @@ export default function SignOutButton() {
     })
 
     if (error) {
-      dispatch(
-        showSnackbar({
-          message: error.message ?? 'Sign out failed, please try again.',
-          severity: 'error',
-        }),
-      )
+      show(error.message ?? 'Sign out failed, please try again.', 'error')
       setLoading(false)
     }
   }

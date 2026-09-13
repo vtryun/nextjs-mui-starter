@@ -16,13 +16,12 @@ import { useForm } from 'react-hook-form'
 import { registerSchema, type RegisterInput } from '@/validations/auth'
 import { signUp } from '@/lib/auth-client'
 import Link from '@/components/link'
-import { useAppDispatch } from '@/store/hooks'
-import { showSnackbar } from '@/store/snackbar-slice'
+import { useSnackbar } from '@/hooks/useSnackbar'
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false)
   const router = useRouter()
-  const dispatch = useAppDispatch()
+  const { show } = useSnackbar()
 
   const {
     register,
@@ -47,21 +46,11 @@ export default function RegisterPage() {
     })
 
     if (error) {
-      dispatch(
-        showSnackbar({
-          message: error.message || 'Sign up failed. Please try again.',
-          severity: 'error',
-        }),
-      )
+      show(error.message || 'Sign up failed. Please try again.', 'error')
       return
     }
 
-    dispatch(
-      showSnackbar({
-        message: 'Account created successfully.',
-        severity: 'success',
-      }),
-    )
+    show('Account created successfully.', 'success')
 
     router.push('/dashboard')
   }

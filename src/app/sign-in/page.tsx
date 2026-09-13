@@ -1,9 +1,8 @@
 'use client'
 
 import Link from '@/components/link'
+import { useSnackbar } from '@/hooks/useSnackbar'
 import { signIn } from '@/lib/auth-client'
-import { useAppDispatch } from '@/store/hooks'
-import { showSnackbar } from '@/store/snackbar-slice'
 import { LoginInput, loginSchema } from '@/validations/auth'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
@@ -26,7 +25,7 @@ import { Controller, useForm } from 'react-hook-form'
 
 export default function SpaceLogin() {
   const [showPassword, setShowPassword] = useState(false)
-  const dispatch = useAppDispatch()
+  const { show } = useSnackbar()
 
   const {
     register,
@@ -52,12 +51,7 @@ export default function SpaceLogin() {
     })
 
     if (error) {
-      dispatch(
-        showSnackbar({
-          message: error.message || '登录失败，请检查邮箱和密码',
-          severity: 'error',
-        }),
-      )
+      show(error.message || '登录失败，请检查邮箱和密码', 'error')
     }
   }
 
