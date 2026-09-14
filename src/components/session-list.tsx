@@ -1,62 +1,17 @@
 'use client'
 
-import { authClient } from '@/lib/auth-client'
+import { listSessions, revokeSession } from '@/lib/auth-client'
 import { useSnackbar } from '@/hooks/useSnackbar'
+import { formatIp, parseUserAgent } from '@/lib/user-agent'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import Button from '@mui/material/Button'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
+import CircularProgress from '@mui/material/CircularProgress'
 import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
-import CircularProgress from '@mui/material/CircularProgress'
-
-type SessionItem = {
-  id: string
-  token: string
-  ipAddress: string | null
-  userAgent: string | null
-  createdAt: Date
-  expiresAt: Date
-}
 
 const SESSIONS_KEY = ['auth', 'sessions'] as const
-
-function formatIp(ip: string | null) {
-  if (!ip) return 'Unknown IP'
-  if (
-    ip === '::1' ||
-    ip === '0000:0000:0000:0000:0000:0000:0000:0000' ||
-    ip === '::ffff:127.0.0.1'
-  ) {
-    return 'Localhost'
-  }
-  return ip
-}
-
-function parseUserAgent(ua: string | null) {
-  if (!ua) return 'Unknown device'
-  const browser = ua.includes('Edg/')
-    ? 'Edge'
-    : ua.includes('Chrome/')
-      ? 'Chrome'
-      : ua.includes('Firefox/')
-        ? 'Firefox'
-        : ua.includes('Safari/')
-          ? 'Safari'
-          : 'Unknown browser'
-  const os = ua.includes('Windows')
-    ? 'Windows'
-    : ua.includes('Mac OS')
-      ? 'macOS'
-      : ua.includes('Linux')
-        ? 'Linux'
-        : ua.includes('Android')
-          ? 'Android'
-          : ua.includes('iPhone') || ua.includes('iPad')
-            ? 'iOS'
-            : 'Unknown OS'
-  return `${browser} on ${os}`
-}
 
 export default function SessionList() {
   const queryClient = useQueryClient()
@@ -69,15 +24,27 @@ export default function SessionList() {
   } = useQuery({
     queryKey: SESSIONS_KEY,
     queryFn: async () => {
-      const { data, error } = await authClient.listSessions()
+      const { data, error } = await listSessions()
       if (error) throw new Error(error.message ?? 'Failed to load sessions')
-      return data as SessionItem[]
+
+      // Mapped field by field rather than asserted, so a change in the
+      // library's response shape surfaces as a type error instead of a
+      // silently wrong `as` cast.
+      return (data ?? []).map((session) => ({
+        id: session.id,
+        token: session.token,
+        ipAddress: session.ipAddress ?? null,
+        userAgent: session.userAgent ?? null,
+        // Normalised here so the render path has a Date and never has to guess
+        // whether the library handed back a Date, an ISO string, or a number.
+        createdAt: new Date(session.createdAt),
+      }))
     },
   })
 
   const revokeMutation = useMutation({
     mutationFn: async (token: string) => {
-      const { error } = await authClient.revokeSession({ token })
+      const { error } = await revokeSession({ token })
       if (error) throw new Error(error.message ?? 'Failed to revoke session')
     },
     onSuccess: () => {
@@ -120,7 +87,7 @@ export default function SessionList() {
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
                   {formatIp(session.ipAddress)} ·{' '}
-                  {new Date(session.createdAt).toLocaleString()}
+                  {session.createdAt.toLocaleString()}
                 </Typography>
               </Stack>
               <Button

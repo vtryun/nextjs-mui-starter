@@ -1,0 +1,18 @@
+.next
+out
+build
+coverage
+node_modules
+pnpm-lock.yaml
+skills-lock.json
+src/generated
+.agents
+.claude
+.windsurf
+.workbuddy
+.wb-*
+.github
+# Standalone utility script at the repo root — not application code, and written
+# in its own 4-space/semicolon style on purpose.
+collect.js
+output.txt

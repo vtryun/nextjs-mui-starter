@@ -15,18 +15,24 @@ export default function SignOutButton() {
     if (loading) return
     setLoading(true)
 
-    const { error } = await signOut({
-      fetchOptions: {
-        onSuccess: () => {
-          show('Signed out successfully', 'success')
-          router.push('/sign-in')
-          router.refresh()
+    try {
+      const { error } = await signOut({
+        fetchOptions: {
+          onSuccess: () => {
+            show('Signed out successfully', 'success')
+            router.push('/sign-in')
+            router.refresh()
+          },
         },
-      },
-    })
+      })
 
-    if (error) {
-      show(error.message ?? 'Sign out failed, please try again.', 'error')
+      if (error) {
+        show(error.message ?? 'Sign out failed, please try again.', 'error')
+      }
+    } finally {
+      // Reset on every path. Previously this only ran in the error branch, so
+      // any success that did not fire `onSuccess` left the button disabled
+      // forever — the user could no longer sign out at all.
       setLoading(false)
     }
   }
