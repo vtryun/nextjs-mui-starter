@@ -1,0 +1,357 @@
+'use client'
+
+import Link from '@/components/link'
+import SocialProviderButtons from '@/components/social-provider-buttons'
+import { useSnackbar } from '@/hooks/useSnackbar'
+import { signIn } from '@/lib/auth-client'
+import type { SocialProviderId } from '@/lib/social-providers'
+import {
+  LoginInput,
+  loginSchema,
+  resolveIdentifierKind,
+} from '@/validations/auth'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Visibility, VisibilityOff } from '@mui/icons-material'
+import Box from '@mui/material/Box'
+import Button from '@mui/material/Button'
+import Checkbox from '@mui/material/Checkbox'
+import FormControlLabel from '@mui/material/FormControlLabel'
+import IconButton from '@mui/material/IconButton'
+import Stack from '@mui/material/Stack'
+import TextField from '@mui/material/TextField'
+import Typography from '@mui/material/Typography'
+import { useState } from 'react'
+import { Controller, useForm } from 'react-hook-form'
+
+export default function SignInForm({
+  enabledProviders,
+}: {
+  enabledProviders: SocialProviderId[]
+}) {
+  const [showPassword, setShowPassword] = useState(false)
+  const { show } = useSnackbar()
+
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginInput>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      identifier: '',
+      password: '',
+      rememberMe: false,
+    },
+    mode: 'onBlur',
+  })
+
+  const onSubmit = async (data: LoginInput) => {
+    const identifier = data.identifier.trim()
+    const options = {
+      password: data.password,
+      rememberMe: data.rememberMe,
+      callbackURL: '/dashboard',
+    }
+
+    // better-auth exposes email and username as separate endpoints. The
+    // dispatch rule lives in the validation module so it stays identical to the
+    // one `loginSchema` validates with.
+    const { error } =
+      resolveIdentifierKind(identifier) === 'email'
+        ? await signIn.email({ email: identifier, ...options })
+        : await signIn.username({ username: identifier, ...options })
+
+    if (error) {
+      show(
+        error.message ??
+          'Sign in failed. Check your credentials and try again.',
+        'error',
+      )
+    }
+  }
+
+  return (
+    <Box
+      sx={{
+        minHeight: '100vh',
+        display: 'grid',
+        gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+        gridTemplateRows: { xs: 'auto 1fr', md: '1fr' },
+      }}
+    >
+      {/* Left Panel - Space Theme */}
+      <Box
+        sx={{
+          position: 'relative',
+          background: `linear-gradient(135deg, 
+            rgba(13, 27, 42, 0.95) 0%, 
+            rgba(27, 39, 53, 0.9) 50%, 
+            rgba(65, 74, 76, 0.8) 100%
+          )`,
+          color: 'white',
+          display: { xs: 'none', md: 'flex' },
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+          p: { xs: 3, md: 4 },
+          minHeight: { xs: '40vh', md: '100vh' },
+          textAlign: 'center',
+          overflow: 'hidden',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundImage: `url("https://placehold.co/800x600")`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            opacity: 0.3,
+            zIndex: -1,
+          },
+        }}
+      >
+        <Stack spacing={3} sx={{ maxWidth: 400, zIndex: 1 }}>
+          <Typography
+            variant="h2"
+            sx={{
+              fontSize: { xs: '2.5rem', md: '3.5rem' },
+              fontWeight: 300,
+              lineHeight: 1.2,
+              mb: 2,
+            }}
+          >
+            The Future
+            <br />
+            Through Space
+          </Typography>
+
+          <Typography
+            variant="body1"
+            sx={{
+              opacity: 0.9,
+              lineHeight: 1.6,
+              fontSize: { xs: '0.95rem', md: '1rem' },
+            }}
+          >
+            Lorem ipsum dolor sit amet consectetur. Lorem posuere at odio nullam
+            pulvinar enim consequat at vitae. Elit ullamcorper ultrices magna
+            malesuada erat.
+          </Typography>
+        </Stack>
+
+        {/* Progress Indicators */}
+        <Stack
+          direction="row"
+          spacing={1}
+          sx={{
+            position: 'absolute',
+            bottom: 24,
+            left: '50%',
+            transform: 'translateX(-50%)',
+          }}
+        >
+          <Box
+            sx={{
+              width: 32,
+              height: 4,
+              bgcolor: 'white',
+              borderRadius: 2,
+            }}
+          />
+          <Box
+            sx={{
+              width: 16,
+              height: 4,
+              bgcolor: 'rgba(255, 255, 255, 0.4)',
+              borderRadius: 2,
+            }}
+          />
+          <Box
+            sx={{
+              width: 16,
+              height: 4,
+              bgcolor: 'rgba(255, 255, 255, 0.4)',
+              borderRadius: 2,
+            }}
+          />
+        </Stack>
+      </Box>
+      {/* Right Panel - Login Form */}
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          p: { xs: 3, md: 4 },
+          bgcolor: 'background.paper',
+        }}
+      >
+        <Box sx={{ maxWidth: 400, mx: 'auto' }}>
+          <Stack spacing={3}>
+            <Box sx={{ textAlign: 'center', mb: 2 }}>
+              <Typography
+                variant="h2"
+                sx={{
+                  fontWeight: 600,
+                  mb: 1,
+                  color: 'text.primary',
+                }}
+              >
+                Welcome Back
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{
+                  color: 'text.secondary',
+                }}
+              >
+                Enter your email or username to access your account
+              </Typography>
+            </Box>
+
+            <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
+              <Stack spacing={2.5}>
+                <TextField
+                  fullWidth
+                  required
+                  label="Email or username"
+                  autoComplete="username"
+                  placeholder="you@example.com or your-username"
+                  error={!!errors.identifier}
+                  helperText={errors.identifier?.message}
+                  variant="outlined"
+                  {...register('identifier')}
+                />
+
+                <TextField
+                  fullWidth
+                  required
+                  label="Password"
+                  placeholder="Enter your password"
+                  type={showPassword ? 'text' : 'password'}
+                  autoComplete="current-password"
+                  error={!!errors.password}
+                  helperText={errors.password?.message}
+                  variant="outlined"
+                  {...register('password')}
+                  slotProps={{
+                    input: {
+                      endAdornment: (
+                        <IconButton
+                          aria-label={
+                            showPassword ? 'Hide password' : 'Show password'
+                          }
+                          onClick={() => setShowPassword((v) => !v)}
+                          edge="end"
+                        >
+                          {showPassword ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      ),
+                    },
+                  }}
+                />
+
+                <Stack
+                  direction="row"
+                  sx={{
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    mt: 1,
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  <Controller
+                    name="rememberMe"
+                    control={control}
+                    render={({ field }) => (
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            {...field}
+                            checked={field.value}
+                            size="small"
+                          />
+                        }
+                        label="Remember me"
+                        sx={{
+                          '& .MuiFormControlLabel-label': {
+                            fontSize: '0.875rem',
+                          },
+                        }}
+                      />
+                    )}
+                  />
+                  <Typography
+                    component={Link}
+                    href="/forgot-password"
+                    variant="body2"
+                    sx={{
+                      ml: 'auto',
+                      color: 'text.primary',
+                      textDecoration: 'none',
+                      '&:hover': {
+                        textDecoration: 'underline',
+                      },
+                    }}
+                  >
+                    Forgot password?
+                  </Typography>
+                </Stack>
+
+                <Button
+                  fullWidth
+                  type="submit"
+                  variant="contained"
+                  size="large"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'Signing in...' : 'Sign In'}
+                </Button>
+
+                <SocialProviderButtons providers={enabledProviders} />
+
+                <Stack
+                  direction="row"
+                  spacing={0.5}
+                  sx={{
+                    justifyContent: 'center',
+                    mt: 2,
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: 'text.secondary',
+                    }}
+                  >
+                    Don&apos;t have an account?
+                  </Typography>
+                  <Typography
+                    component={Link}
+                    href="/sign-up"
+                    variant="body2"
+                    sx={{
+                      color: 'text.primary',
+                      textDecoration: 'none',
+                      fontWeight: 500,
+                      '&:hover': {
+                        textDecoration: 'underline',
+                      },
+                    }}
+                  >
+                    Sign Up
+                  </Typography>
+                </Stack>
+              </Stack>
+            </Box>
+          </Stack>
+        </Box>
+      </Box>
+    </Box>
+  )
+}
