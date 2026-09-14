@@ -1,36 +1,44 @@
-import { auth } from '@/lib/auth'
-import { headers } from 'next/headers'
-import { redirect } from 'next/navigation'
-import SignOutButton from '@/components/sign-out-button'
-import SessionList from '@/components/session-list'
-import Typography from '@mui/material/Typography'
+import Button from '@mui/material/Button'
+import Divider from '@mui/material/Divider'
 import Stack from '@mui/material/Stack'
+import Typography from '@mui/material/Typography'
+
+import Link from '@/components/link'
+import SessionList from '@/components/session-list'
+import SignOutButton from '@/components/sign-out-button'
+import { requireSession } from '@/lib/session'
 
 export default async function DashboardPage() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  })
-
-  if (!session) {
-    redirect('/sign-in')
-  }
+  const session = await requireSession()
 
   return (
     <Stack spacing={3} sx={{ p: 4 }}>
-      <div>
+      <Stack spacing={0.5}>
         <Typography variant="h4">Dashboard</Typography>
         <Typography>Welcome, {session.user.name}</Typography>
-        <Typography>Email: {session.user.email}</Typography>
-      </div>
-
-      <div>
-        <Typography variant="h6" sx={{ mb: 1 }}>
-          Active Sessions
+        <Typography color="text.secondary">
+          Email: {session.user.email}
         </Typography>
-        <SessionList />
-      </div>
+        {session.user.username ? (
+          <Typography color="text.secondary">
+            Username: {session.user.username}
+          </Typography>
+        ) : null}
+      </Stack>
 
-      <SignOutButton />
+      <Stack direction="row" spacing={1.5}>
+        <Button component={Link} href="/profile" variant="outlined">
+          Edit profile
+        </Button>
+        <SignOutButton />
+      </Stack>
+
+      <Divider />
+
+      <Stack spacing={1}>
+        <Typography variant="h6">Active sessions</Typography>
+        <SessionList />
+      </Stack>
     </Stack>
   )
 }
